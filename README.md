@@ -1,8 +1,7 @@
 # YouTube’s Adpocalypse - Study of creators’ participation on the platform after the implementation of a demonetisation policy.
 
 ## Paper abstract
-This work examines the causal effect of the implementation of a demonetisation rule on content supply of 51,583 English-speaking channels on YouTube.  
-This research offers insights into the impact of an economic sanction on creators’ production strategies on two levels: the number of weekly posted videos and the proportion of not-suitable-for-advertisers content in the weekly video supply.  
+This work examines the causal effect of the implementation of a demonetisation rule on content supply of 51,583 English-speaking channels on YouTube.  It offers insights into the impact of an economic sanction on creators’ production strategies on two levels: the number of weekly posted videos and the proportion of not-suitable-for-advertisers content in the weekly video supply.  
 First, the adjustment in the demonetisation rule led to a decrease in the volume of weekly video supply by non-advertiser-friendly content creators compared to brand-safe ones. Second, the impact of such moderation action is heterogeneous among the channel’s main content categories and its audience size. Third, the introduction of this new rule led to a reduction of the share of non-advertiser-friendly videos in the volume of weekly supply. These findings provide additional evidence on the importance of extrinsic motivations and financial incentives in the creators’ level of participation on the platform. These results illustrate the platform’s ability to control the flux of content. Moreover, it highlights the limits of a uniform moderation action on the reduction of harmful content and as a platform governance strategy.  
 
 ## Requirements

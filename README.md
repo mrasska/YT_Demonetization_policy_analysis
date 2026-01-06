@@ -17,5 +17,5 @@ First, the adjustment in the demonetisation rule led to a decrease in the volume
 ### 1. Creating the dataset.
 The first folder, "*1_Creating_sample*", contains all the scripts (mainly written in Python in Jupyter Notebook) that clean the initial dataset and create the studied video sample. Optimization could be done as some selection criteria were introduced later in the analysis (smaller time window).   
 
-## 2. 2_Creating_variables.
+### 2. Creating the independent variables.
 In this folder, we regrouped the scripts used to create the independant variables of our DiD model: channels' main video genre, average subscribers count, treatment/control group.

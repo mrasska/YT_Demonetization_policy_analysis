@@ -2,10 +2,7 @@ library(readr)
 library(tidyr)
 library(dplyr)
 
-weekly_uploads <- read_delim("D:/Dropbox/Doctorat/Chapitre 2/YouNiverse/August_version/weekly_uploads_cat.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
-#weekly_uploads <- read_delim("C:/Users/maria.rasskazova/Dropbox/Doctorat/Chapitre 2/YouNiverse/August_version/weekly_uploads_cat.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
-
-View(weekly_uploads)
+weekly_uploads <- read_delim("file_path", delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 #complete missing week
 weekly_uploads <- complete(data=weekly_uploads, week, nesting(channel))

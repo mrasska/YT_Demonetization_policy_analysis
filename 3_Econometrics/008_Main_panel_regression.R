@@ -58,23 +58,6 @@ type_average<- uploads %>%
   group_by(type, first_moderation_update) %>%
   summarize(count = mean(id_0))
 
-
-##Average weekly uploads by type / audience size / period
-av<- uploads %>%
-  group_by(type, sub_bin_prior, first_moderation_update) %>%
-  summarize(count = mean(id_0))
-
-
-describe(uploads$id_0)
-describe(uploads$ln_id)
-describe(uploads$treated)
-describe(uploads$first_moderation_update)
-
-uploads$treated <- as.factor(uploads$treated)
-uploads$first_moderation_update <- as.factor(uploads$first_moderation_update)
-
-
-
 ### Adding variables ----
 uploads <- uploads %>% 
   mutate(cat_gaming = ifelse(main_cat == 'Gaming', 1, 0))
@@ -98,6 +81,8 @@ uploads <- uploads %>%
   mutate(audience3 = ifelse(sub_bin_prior == 'More than 1M subs', 1, 0))
 
 ## Pre-trends -----
+# The variable treated is interacted with each value of period (week) and Period 0 is set as a reference
+# Important : treated should not be set as a factor variable in order to plot the coefficients
 pre_min = feols(id_0~ pre_mod*treated + post_mod*treated | channel+week, uploads)
 summary(pre_min)
 
@@ -111,29 +96,79 @@ pre_group2 = feols(id_0 ~ i(period, treated, 0) | channel+week, uploads)
 summary(pre_group2)
 iplot(pre_group2, ref.line = 0, main="Coefficient plot for exposed channels")
 
+# Statistical summary ----
+uploads$first_moderation_update <- as.factor(uploads$first_moderation_update)
+describe(uploads$id_0)
+describe(uploads$ln_id)
+describe(uploads$treated)
+describe(uploads$first_moderation_update) 
+
 ## Econometic regressions ----
+uploads$treated <- as.factor(uploads$treated)
+
 ## Two-way fixed effect = channel & week
 twfe <- feols(id_0 ~ treated*first_moderation_update |channel + week, 
               data= uploads)
 summary(twfe)
 
-twfe_cat <- feols(id_0 ~ treated*first_moderation_update*(cat_gaming+cat_enter+cat_people) |channel + week, 
-              data= uploads)
-summary(twfe_cat)
-
-twfe_audience <- feols(id_0 ~ treated*first_moderation_update*(audience1+audience2+audience3) |channel + week, 
-                  data= uploads)
-summary(twfe_audience)
-
 twfe_ln <- feols(ln_id ~ treated*first_moderation_update |channel + week, 
                 data= uploads)
 summary(twfe_ln)
 
-twfe_cat_ln <- feols(ln_id ~ treated*first_moderation_update*(cat_gaming+cat_enter+cat_people) |channel + week, 
-                  data= uploads)
-summary(twfe_cat_ln)
 
-## Dataset - Less than 10k subs ----
+#Average weekly uploads by period and type
+type_average<- uploads %>%
+  group_by(type, first_moderation_update) %>%
+  summarize(count = mean(id_0))
+
+# Per channels' main video category ----
+twfe_cat <- feols(id_0 ~ treated*first_moderation_update*(cat_gaming+cat_enter+cat_people) |channel + week, 
+                  data= uploads)
+summary(twfe_cat)
+
+## Genre : Gaming ---
+df_genre1=uploads[uploads$main_cat=='Gaming',]
+
+twfe_genre1=feols(id_0 ~ treated + first_moderation_update + treated*first_moderation_update | channel+ week, 
+                data=df_genre1)
+summary(twfe_genre1)
+
+#Average weekly uploads by period and type
+average1<- df_genre1 %>%
+  group_by(type, first_moderation_update) %>%
+  summarize(count = mean(id_0))
+
+## Genre : Entertainment ---
+df_genre2=uploads[uploads$main_cat=='Entertainment',]
+
+twfe_genre2=feols(id_0 ~ treated + first_moderation_update + treated*first_moderation_update | channel+ week, 
+                  data=df_genre2)
+summary(twfe_genre2)
+
+#Average weekly uploads by period and type
+average2<- df_genre2 %>%
+  group_by(type, first_moderation_update) %>%
+  summarize(count = mean(id_0))
+
+## Genre : People and blogs ---
+df_genre3=uploads[uploads$main_cat=='People',]
+
+twfe_genre3=feols(id_0 ~ treated + first_moderation_update + treated*first_moderation_update | channel+ week, 
+                  data=df_genre3)
+summary(twfe_genre3)
+
+#Average weekly uploads by period and type
+average3<- df_genre3 %>%
+  group_by(type, first_moderation_update) %>%
+  summarize(count = mean(id_0))
+
+
+# Channels' audience size ----
+twfe_audience <- feols(id_0 ~ treated*first_moderation_update*(audience1+audience2+audience3) |channel + week, 
+                       data= uploads)
+summary(twfe_audience)
+
+## Dataset - Less than 10k subs ---
 df_cat1=uploads[uploads$sub_bin_prior=='Less than 10k subs',]
 
 describe(df_cat1$id_0)
@@ -151,7 +186,7 @@ average1<- df_cat1 %>%
   group_by(type, first_moderation_update) %>%
   summarize(count = mean(id_0))
 
-## Dataset - Between 10k and 100k subs ----
+## Dataset - Between 10k and 100k subs ---
 df_cat2=uploads[uploads$sub_bin_prior=='Between 10k and 100k subs',]
 
 describe(df_cat2$id_0)
@@ -169,8 +204,7 @@ average2<- df_cat2 %>%
   group_by(type, first_moderation_update) %>%
   summarize(count = mean(id_0))
 
-
-## Dataset - Between 100k and 1M subs ----
+## Dataset - Between 100k and 1M subs ---
 df_cat3=uploads[uploads$sub_bin_prior=='Between 100k and 1M subs',]
 
 describe(df_cat3$id_0)
@@ -188,7 +222,7 @@ average3<- df_cat3 %>%
   group_by(type, first_moderation_update) %>%
   summarize(count = mean(id_0))
 
-## Dataset - Between More than 1M subs ----
+## Dataset - Between More than 1M subs ---
 df_cat4=uploads[uploads$sub_bin_prior=='More than 1M subs',]
 
 describe(df_cat4$id_0)

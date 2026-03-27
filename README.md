@@ -1,4 +1,4 @@
-# YouTube’s Adpocalypse - Study of creators’ participation on the platform after the implementation of a demonetisation policy.
+# Content demonetisation and creators’ participation: study of YouTube’s first Adpocalypse
 
 ## Paper abstract
 This work examines the causal effect of the implementation of a demonetisation rule on content supply of 51,583 English-speaking channels on YouTube. With a difference-in-differences (DiD) model, we estimated the impact of an economic sanction on creators’ production strategies on two levels: the number of weekly posted videos and the proportion of not-suitable-for-advertisers content in the weekly video supply.  

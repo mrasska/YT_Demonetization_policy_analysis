@@ -5,12 +5,9 @@ library(dplyr)
 library(stargazer)
 library(fixest)
 
-uploads <- read_delim("file_path", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+uploads <- read_delim("F:/Doctorat/Chapitre 2/YouNiverse/August_version/true_weekly_uploads_umbalanced_data_ada.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 #### Cleaning ----
-# Dropping rows with channels inactive prior to moderation update
-uploads <-uploads[uploads$type!= "missing", ] 
-
 # Dropping channels with not-greenlighted categories
 uploads <-uploads[uploads$main_cat!= "Film & Animation", ] 
 uploads <-uploads[uploads$main_cat!= "Music", ] 
@@ -21,42 +18,57 @@ uploads <-uploads[uploads$main_cat!= "Sports", ]
 uploads <- uploads %>% drop_na(sub_bin_prior)
 
 # Merge with week_period
-week <- read_delim("file_path", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+week <- read_delim("F:/Doctorat/Chapitre 2/YouNiverse/August_version/week_period.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 uploads <- merge(uploads, week, all.x = TRUE,
                   by.x = 'week', by.y = 'week')
-
-uploads$ln_id <- log(uploads$id_0 + 1)
 
 ### Stats ----
 # Counting channels & videos
 n_distinct(uploads$channel)
 sum(uploads$id_0)
 
-#Counting channels per type
-types <- uploads %>%
-  group_by(type) %>%
-  summarize(count = n_distinct(channel))
-
-#Counting channeks per main category
+#Counting channels per main category
 cat <- uploads %>%
   group_by(main_cat) %>%
   summarize(count = n_distinct(channel))
 
-#Counting channeks per nb subscribers
+#Counting channels per nb subscribers
 size <- uploads %>%
   group_by(sub_bin_prior) %>%
   summarize(count = n_distinct(channel))
 
-#Counting channeks per nb subscribers
-type_size <- uploads %>%
-  group_by(type, sub_bin_prior) %>%
+#Counting channels per C/T classifications (T more than 0% of publications)
+type0 <- uploads %>%
+  group_by(treated_0) %>%
   summarize(count = n_distinct(channel))
 
-#Average weekly uploads by period and type
-type_average<- uploads %>%
-  group_by(type, first_moderation_update) %>%
-  summarize(count = mean(id_0))
+#Counting channels per C/T classifications (T more than 10% of publications)
+type10 <- uploads %>%
+  group_by(treated_10) %>%
+  summarize(count = n_distinct(channel))
+
+#Counting channels per C/T classifications and audience size
+type_25 <- uploads %>%
+  group_by(treated_25) %>%
+  summarize(count = n_distinct(channel))
+
+#Counting channels per C/T classifications (T more than 0% of publications)
+type0ada <- uploads %>%
+  group_by(type_channel_0) %>%
+  summarize(count = n_distinct(channel))
+
+#Counting channels per C/T classifications (T more than 10% of publications)
+type10ada <- uploads %>%
+  group_by(type_channel_10) %>%
+  summarize(count = n_distinct(channel))
+
+#Counting channels per C/T classifications and audience size
+type25ada <- uploads %>%
+  group_by(type_channel_25) %>%
+  summarize(count = n_distinct(channel))
+
+uploads$first_moderation_update <- as.factor(uploads$first_moderation_update)
 
 ### Adding variables ----
 uploads <- uploads %>% 
@@ -83,42 +95,65 @@ uploads <- uploads %>%
 ## Pre-trends -----
 # The variable treated is interacted with each value of period (week) and Period 0 is set as a reference
 # Important : treated should not be set as a factor variable in order to plot the coefficients
-pre_min = feols(id_0~ pre_mod*treated + post_mod*treated | channel+week, uploads)
-summary(pre_min)
 
-pre_group1 = feols(id_0 ~ i(as.factor(p3), treated, 0) | channel+week, uploads)
-summary(pre_group1)
+#Treated_0
+pre_treated0 = feols(id_0 ~ i(period, treated_0, 0) | channel+week, uploads)
+summary(pre_treated0)
+iplot(pre_treated0, ref.line = 0, main="Coefficient plot for exposed channels (more than 0%  of uploads)")
 
-pre_group = feols(id_0 ~ i(as.factor(p2), treated, 0) | channel+week, uploads)
-summary(pre_group)
+#Treated_10
+pre_treated10 = feols(id_0 ~ i(period, treated_10, 0) | channel+week, uploads)
+summary(pre_treated10)
+iplot(pre_treated10, ref.line = 0, main="Coefficient plot for exposed channels (more than 10%  of uploads)")
 
-pre_group2 = feols(id_0 ~ i(period, treated, 0) | channel+week, uploads)
-summary(pre_group2)
-iplot(pre_group2, ref.line = 0, main="Coefficient plot for exposed channels")
+#Treated_50
+pre_treated50 = feols(id_0 ~ i(period, treated_50, 0) | channel+week, uploads)
+summary(pre_treated50)
+iplot(pre_treated50, ref.line = 0, main="Coefficient plot for exposed channels (more than 50%  of uploads)")
 
 # Statistical summary ----
-uploads$first_moderation_update <- as.factor(uploads$first_moderation_update)
 describe(uploads$id_0)
-describe(uploads$ln_id)
-describe(uploads$treated)
 describe(uploads$first_moderation_update) 
 
-## Econometic regressions ----
-uploads$treated <- as.factor(uploads$treated)
+## Econometric regressions ----
+uploads$treated_0 <- as.factor(uploads$treated_0)
+uploads$treated_10 <- as.factor(uploads$treated_10)
+uploads$treated_25 <- as.factor(uploads$treated_25)
 
 ## Two-way fixed effect = channel & week
-twfe <- feols(id_0 ~ treated*first_moderation_update |channel + week, 
+twfe_0 <- feols(id_0 ~ treated_0*first_moderation_update |channel + week, 
               data= uploads)
-summary(twfe)
+summary(twfe_0)
 
-twfe_ln <- feols(ln_id ~ treated*first_moderation_update |channel + week, 
+twfe_10 <- feols(id_0 ~ treated_10*first_moderation_update |channel + week, 
                 data= uploads)
-summary(twfe_ln)
+summary(twfe_10)
 
+twfe_25 <- feols(id_0 ~ treated_25*first_moderation_update |channel + week, 
+                 data= uploads)
+summary(twfe_25)
 
 #Average weekly uploads by period and type
 type_average<- uploads %>%
-  group_by(type, first_moderation_update) %>%
+  group_by(treated_25, first_moderation_update) %>%
+  summarize(count = mean(id_0))
+
+# Different thresolds with ada keywords ---
+twfe_0ada <- feols(id_0 ~ treated_ada_0*first_moderation_update |channel + week, 
+                   data= uploads)
+summary(twfe_0ada)
+
+twfe_10ada <- feols(id_0 ~ treated_ada_10*first_moderation_update |channel + week, 
+                    data= uploads)
+summary(twfe_10ada)
+
+twfe_25ada <- feols(id_0 ~ treated_ada_25*first_moderation_update |channel + week, 
+                    data= uploads)
+summary(twfe_25ada)
+
+#Average weekly uploads by period and type
+type_average<- uploads %>%
+  group_by(type_channel_25, first_moderation_update) %>%
   summarize(count = mean(id_0))
 
 # Per channels' main video category ----

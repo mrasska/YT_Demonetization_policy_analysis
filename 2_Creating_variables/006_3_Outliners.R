@@ -2,7 +2,9 @@ library(readr)
 library(tidyr)
 library(dplyr)
 
-uploads <- read_delim("D:/Dropbox/Doctorat/Chapitre 2/YouNiverse/August_version/weekly_uploads_cat_completed.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+uploads <- read_delim("F:/Doctorat/Chapitre 2/YouNiverse/August_version/weekly_uploads_cat_completed.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+max_uploads <- max(uploads$id_0)
 
 upper_bound1 <- quantile(uploads$id_0, 0.975)
 upper_bound1
@@ -18,6 +20,21 @@ upper_bound4
 
 upper_bound5 <- quantile(uploads$id_0, 0.9999)
 upper_bound5
+
+#Calculate quantile threshold per main channel category
+avg_cat <- uploads %>% 
+  group_by(main_cat) %>% 
+  summarise(val = mean(id_0))
+
+#Calculate quantile threshold per main channel category
+q = c(.95,0.975, .99, .999)
+q_cat <- uploads %>% 
+  group_by(main_cat) %>% 
+  summarize(quant95 = quantile(id_0, probs = q[1]), 
+            quant97 = quantile(id_0, probs = q[2]),
+            quant99 = quantile(id_0, probs = q[3]), 
+            quant999 = quantile(id_0, probs = q[3]))
+
 
 outlier_ind1 <- which(uploads$id_0 > upper_bound1)
 outliers1 <- uploads[outlier_ind1, ]
@@ -39,4 +56,6 @@ outlier_ind5 <- which(uploads$id_0 > upper_bound5)
 outliers5 <- uploads[outlier_ind5, ]
 n_distinct(outliers5$channel)
 
+
 write.csv2(outliers3, file="outliers_995.csv", row.names=FALSE)
+write.csv2(outliers2, file="outliers_99.csv", row.names=FALSE)
